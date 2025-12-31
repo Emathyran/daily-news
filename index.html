@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日新闻聚合 | Daily News Digest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+        
+        .timestamp {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        
+        .content {
+            padding: 30px 20px;
+        }
+        
+        .category {
+            margin-bottom: 40px;
+        }
+        
+        .category-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-weight: 700;
+        }
+        
+        .articles {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .article {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .article:hover {
+            background: #f0f2f8;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateX(4px);
+        }
+        
+        .article-source {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .article-title {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        .article-title a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .article-title a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        .article-summary {
+            color: #555;
+            font-size: 0.95em;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .article-meta {
+            font-size: 0.85em;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .read-more {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        
+        .read-more:hover {
+            color: #764ba2;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .category-title {
+                font-size: 1.4em;
+            }
+            
+            .article-title {
+                font-size: 1.05em;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📰 每日新闻聚合</h1>
+            <p>Daily News Digest | 智能摘要 · 全球视野</p>
+            <div class="timestamp">更新时间: 2025-12-31 15:28:44 UTC</div>
+        </div>
+        
+        <div class="content">
+            <div class="category">
+                <h2 class="category-title">全球宏观</h2>
+                <div class="articles">
+                    <div class="article">
+                        <span class="article-source">Bloomberg</span>
+                        <h3 class="article-title">
+                            <a href="https://www.bloomberg.com/news/newsletters/2025-12-31/here-s-what-s-happening-in-2026" target="_blank" rel="noopener noreferrer">
+                                Here’s What’s Happening in 2026
+                            </a>
+                        </h3>
+                        <div class="article-summary">彭博社的“Odd Lots”每日通讯是一份内容丰富的时事通讯，它汇集了对市场、金融和经济最新发展的深入分析。该通讯主要由Joe Weisenthal和Tracy Alloway提供观点，也时常邀请其专家网络的成员贡献内容，旨在为读者提供一个涵盖广泛领域的专业视角。</div>
+                        <div class="article-meta">
+                            <span>Wed, 31 Dec 2025 15:16:32 GMT</span>
+                            <a href="https://www.bloomberg.com/news/newsletters/2025-12-31/here-s-what-s-happening-in-2026" target="_blank" rel="noopener noreferrer" class="read-more">
+                                阅读全文 →
+                            </a>
+                        </div>
+                    </div>
+                    <div class="article">
+                        <span class="article-source">Bloomberg</span>
+                        <h3 class="article-title">
+                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/snb-refrained-from-currency-interventions-on-franc-in-third-quarter" target="_blank" rel="noopener noreferrer">
+                                SNB Refrained From Currency Interventions in Third Quarter
+                            </a>
+                        </h3>
+                        <div class="article-summary">瑞士央行（SNB）在第三季度基本未干预外汇市场。此前一季度，因特朗普关税压力，瑞士央行曾被迫抛售瑞郎。第三季度的不干预，表明市场压力缓解，使其无需再采取此前为稳定汇率而进行的干预行动。</div>
+                        <div class="article-meta">
+                            <span>Wed, 31 Dec 2025 08:08:35 GMT</span>
+                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/snb-refrained-from-currency-interventions-on-franc-in-third-quarter" target="_blank" rel="noopener noreferrer" class="read-more">
+                                阅读全文 →
+                            </a>
+                        </div>
+                    </div>
+                    <div class="article">
+                        <span class="article-source">Bloomberg</span>
+                        <h3 class="article-title">
+                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/us-stocks-slouch-into-year-end-with-nike-and-tesla-rallying" target="_blank" rel="noopener noreferrer">
+                                US Stocks Slouch Into Year End With Nike and Tesla Rallying
+                            </a>
+                        </h3>
+                        <div class="article-summary">周三，标普500指数开盘变化不大。耐克公司股价上涨，缘于其CEO购入公司股票；特斯拉股价亦走高，此前知名投资者迈克尔·伯里虽称其估值过高，但表示并未做空。</div>
+                        <div class="article-meta">
+                            <span>Wed, 31 Dec 2025 14:49:47 GMT</span>
+                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/us-stocks-slouch-into-year-end-with-nike-and-tesla-rallying" target="_blank" rel="noopener noreferrer" class="read-more">
+                                阅读全文 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🤖 由 Google Gemini AI 驱动 | Powered by Google Gemini API</p>
+            <p>自动更新于 GitHub Actions | Auto-updated by GitHub Actions</p>
+            <p><a href="https://github.com">GitHub</a> | <a href="https://pages.github.com">GitHub Pages</a></p>
+        </div>
+    </div>
+</body>
+</html>
