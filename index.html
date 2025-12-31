@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每日新闻聚合 | Daily News Digest</title>
+    <title>每日深度研报 | Daily Deep Analysis</title>
     <style>
         * {
             margin: 0;
@@ -11,245 +11,884 @@
             box-sizing: border-box;
         }
         
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #222230;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border-color: #2a2a3a;
+            --accent-blue: #3498db;
+            --accent-red: #e74c3c;
+            --accent-green: #27ae60;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #333;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
             min-height: 100vh;
-            padding: 20px;
         }
         
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            padding: 20px;
         }
         
+        /* Header */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 20px;
             text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-        
-        .header p {
-            font-size: 0.95em;
-            opacity: 0.9;
-        }
-        
-        .timestamp {
-            font-size: 0.85em;
-            opacity: 0.8;
-            margin-top: 15px;
-            font-weight: 500;
-        }
-        
-        .content {
-            padding: 30px 20px;
-        }
-        
-        .category {
+            padding: 60px 20px;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 40px;
         }
         
-        .category-title {
-            font-size: 1.8em;
-            color: #667eea;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #667eea;
+        .header h1 {
+            font-size: 2.8em;
             font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #a0a0b0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .articles {
-            display: grid;
-            gap: 20px;
+        .header .subtitle {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
         }
         
+        .header .timestamp {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        /* Category Section */
+        .category {
+            margin-bottom: 50px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .category-icon {
+            font-size: 1.8em;
+        }
+        
+        .category-title {
+            font-size: 1.6em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .category-subtitle {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+        
+        /* Article Card - Accordion */
         .article {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            border-radius: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
         
         .article:hover {
-            background: #f0f2f8;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-            transform: translateX(4px);
+            background: var(--bg-card-hover);
+            border-color: #3a3a4a;
+        }
+        
+        .article-header {
+            padding: 20px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            user-select: none;
+        }
+        
+        .article-header:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .article-indicator {
+            width: 4px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+        
+        .article-main {
+            flex: 1;
         }
         
         .article-source {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            margin-bottom: 10px;
-            font-weight: 600;
+            font-size: 0.75em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
         
         .article-title {
-            font-size: 1.2em;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 1.15em;
             font-weight: 600;
-            line-height: 1.4;
-        }
-        
-        .article-title a {
-            color: #667eea;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .article-title a:hover {
-            color: #764ba2;
-            text-decoration: underline;
-        }
-        
-        .article-summary {
-            color: #555;
-            font-size: 0.95em;
-            margin-bottom: 12px;
-            line-height: 1.6;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 8px;
         }
         
         .article-meta {
             font-size: 0.85em;
-            color: #999;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: var(--text-muted);
         }
         
-        .read-more {
-            display: inline-block;
-            color: #667eea;
+        .article-toggle {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+        
+        .article-toggle svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+        
+        .article.expanded .article-toggle svg {
+            transform: rotate(180deg);
+        }
+        
+        /* Article Content - Expandable */
+        .article-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+        
+        .article.expanded .article-content {
+            max-height: 2000px;
+            transition: max-height 0.6s ease-in;
+        }
+        
+        .article-body {
+            padding: 0 24px 24px 44px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .analysis-section {
+            padding-top: 20px;
+        }
+        
+        .analysis-label {
+            font-size: 0.8em;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .analysis-label::before {
+            content: "";
+            width: 20px;
+            height: 2px;
+            background: var(--accent-color);
+        }
+        
+        .analysis-text {
+            font-size: 1em;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            white-space: pre-wrap;
+        }
+        
+        .analysis-text p {
+            margin-bottom: 16px;
+        }
+        
+        .source-link {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-color);
+        }
+        
+        .source-link a {
+            font-size: 0.8em;
+            color: var(--text-muted);
             text-decoration: none;
-            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             transition: color 0.2s;
         }
         
-        .read-more:hover {
-            color: #764ba2;
+        .source-link a:hover {
+            color: var(--accent-blue);
         }
         
+        .source-link a svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+        
+        /* Footer */
         .footer {
-            background: #f8f9fa;
-            padding: 20px;
             text-align: center;
-            color: #999;
-            font-size: 0.9em;
-            border-top: 1px solid #eee;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 60px;
         }
         
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
+        .footer p {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
         }
         
-        .footer a:hover {
-            text-decoration: underline;
+        .footer .powered {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            opacity: 0.7;
         }
         
+        /* Responsive */
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
+            .container {
+                padding: 15px;
             }
             
-            .category-title {
-                font-size: 1.4em;
+            .header {
+                padding: 40px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .category-header {
+                flex-wrap: wrap;
+            }
+            
+            .category-subtitle {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 8px;
+            }
+            
+            .article-header {
+                padding: 16px;
+            }
+            
+            .article-body {
+                padding: 0 16px 20px 16px;
             }
             
             .article-title {
                 font-size: 1.05em;
             }
-            
-            .content {
-                padding: 20px 15px;
-            }
         }
+        
+        /* Category-specific accent colors */
+        .category-china-us { --accent-color: #e74c3c; }
+        .category-vietnam { --accent-color: #27ae60; }
+        .category-global { --accent-color: #3498db; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📰 每日新闻聚合</h1>
-            <p>Daily News Digest | 智能摘要 · 全球视野</p>
-            <div class="timestamp">更新时间: 2025-12-31 15:28:44 UTC</div>
-        </div>
-        
-        <div class="content">
-            <div class="category">
-                <h2 class="category-title">全球宏观</h2>
-                <div class="articles">
-                    <div class="article">
-                        <span class="article-source">Bloomberg</span>
-                        <h3 class="article-title">
-                            <a href="https://www.bloomberg.com/news/newsletters/2025-12-31/here-s-what-s-happening-in-2026" target="_blank" rel="noopener noreferrer">
-                                Here’s What’s Happening in 2026
-                            </a>
-                        </h3>
-                        <div class="article-summary">彭博社的“Odd Lots”每日通讯是一份内容丰富的时事通讯，它汇集了对市场、金融和经济最新发展的深入分析。该通讯主要由Joe Weisenthal和Tracy Alloway提供观点，也时常邀请其专家网络的成员贡献内容，旨在为读者提供一个涵盖广泛领域的专业视角。</div>
-                        <div class="article-meta">
-                            <span>Wed, 31 Dec 2025 15:16:32 GMT</span>
-                            <a href="https://www.bloomberg.com/news/newsletters/2025-12-31/here-s-what-s-happening-in-2026" target="_blank" rel="noopener noreferrer" class="read-more">
-                                阅读全文 →
-                            </a>
-                        </div>
+    <header class="header">
+        <h1>📊 每日深度研报</h1>
+        <p class="subtitle">AI-Powered Macro Analysis · 首席分析师视角</p>
+        <span class="timestamp">🕐 更新时间: 2025-12-31 15:47 UTC</span>
+    </header>
+    
+    <main class="container">
+
+        <section class="category category-china-us">
+            <div class="category-header">
+                <span class="category-icon">🇺🇸🇨🇳</span>
+                <h2 class="category-title">中美政经</h2>
+                <span class="category-subtitle">China & US Policy</span>
+            </div>
+
+            <article class="article" data-id="中美政经-0">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">Bloomberg Politics</div>
+                        <h3 class="article-title">China Buys Two-Thirds of Pledged US Soybeans as 2025 Closes</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 01:48:03 GMT</div>
                     </div>
-                    <div class="article">
-                        <span class="article-source">Bloomberg</span>
-                        <h3 class="article-title">
-                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/snb-refrained-from-currency-interventions-on-franc-in-third-quarter" target="_blank" rel="noopener noreferrer">
-                                SNB Refrained From Currency Interventions in Third Quarter
-                            </a>
-                        </h3>
-                        <div class="article-summary">瑞士央行（SNB）在第三季度基本未干预外汇市场。此前一季度，因特朗普关税压力，瑞士央行曾被迫抛售瑞郎。第三季度的不干预，表明市场压力缓解，使其无需再采取此前为稳定汇率而进行的干预行动。</div>
-                        <div class="article-meta">
-                            <span>Wed, 31 Dec 2025 08:08:35 GMT</span>
-                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/snb-refrained-from-currency-interventions-on-franc-in-third-quarter" target="_blank" rel="noopener noreferrer" class="read-more">
-                                阅读全文 →
-                            </a>
-                        </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                     </div>
-                    <div class="article">
-                        <span class="article-source">Bloomberg</span>
-                        <h3 class="article-title">
-                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/us-stocks-slouch-into-year-end-with-nike-and-tesla-rallying" target="_blank" rel="noopener noreferrer">
-                                US Stocks Slouch Into Year End With Nike and Tesla Rallying
-                            </a>
-                        </h3>
-                        <div class="article-summary">周三，标普500指数开盘变化不大。耐克公司股价上涨，缘于其CEO购入公司股票；特斯拉股价亦走高，此前知名投资者迈克尔·伯里虽称其估值过高，但表示并未做空。</div>
-                        <div class="article-meta">
-                            <span>Wed, 31 Dec 2025 14:49:47 GMT</span>
-                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/us-stocks-slouch-into-year-end-with-nike-and-tesla-rallying" target="_blank" rel="noopener noreferrer" class="read-more">
-                                阅读全文 →
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 核心事实：
+中国今年已采购至少800万吨美国大豆，完成了两个月前对华盛顿承诺采购量的三分之二，显示出双方在贸易方面达成初步和解的意愿。这一进展使中国有望按时甚至提前兑现其贸易承诺，为中美贸易关系带来了短期积极信号。
+
+📊 经济影响：
+此举对美国农业部门，特别是大豆种植者，提供了显著的短期利好，稳定了出口需求和农产品价格预期。对于中国而言，它有助于保障关键农产品供应，并可能在一定程度上缓解国内食品通胀压力。在中期，这表明中美两国在特定领域仍能找到务实合作点，有助于稳定全球大宗商品市场信心，并可能为其他农产品贸易领域带来示范效应，但其影响范围可能局限于农产品而非更广泛的经济领域。
+
+⚠️ 潜在风险：
+尽管此次大豆采购显示出积极迹象，但“贸易休战”的本质和持续性是主要风险。此次协议的成功履行可能仅是技术性缓解，并未触及中美关系中更深层次的结构性矛盾，如技术竞争、地缘政治紧张或产业政策分歧。未来，政策不确定性、新的贸易壁垒或地缘政治事件仍可能迅速逆转当前的市场乐观情绪，引发市场波动。此外，全球供应链对单一来源的依赖性，以及气候变化对农业产量的潜在影响，也构成长期风险。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.bloomberg.com/news/articles/2025-12-31/china-buys-two-thirds-of-pledged-us-soybeans-as-2025-closes" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
                             </a>
                         </div>
                     </div>
                 </div>
+            </article>
+
+            <article class="article" data-id="中美政经-1">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">Bloomberg Politics</div>
+                        <h3 class="article-title">2025 Was the Year of the Tech CEO</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 15:01:14 GMT</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">**核心事实**
+彭博社观点专栏指出，2025年科技行业正迎来“万亿美元”市值的公司，催生出新的科技巨头阶层。然而，与这种惊人财富积累形成鲜明对比的是，公众对这些科技公司的信任度却急剧下降，据称已跌至个位数水平。这反映出科技巨头在市场估值飞速增长的同时，其社会公信力正面临严重危机。
+
+**经济影响**
+这一趋势对全球经济体和科技行业具有深远影响。短期内，资本可能继续涌入少数头部科技公司，推动其估值进一步攀升。但中期来看，消费者信任的缺失可能导致消费行为转变，削弱这些科技巨头的新产品采纳率和生态系统粘性。全球各国政府，尤其是美欧等主要经济体，很可能加大对科技巨头的监管力度，包括反垄断调查、数据隐私立法及平台责任限制，从而增加企业的运营成本和合规风险。这可能影响科技行业的创新方向与速度，甚至重塑全球数字经济的竞争格局，并对高科技产品的全球供应链配置带来不确定性。
+
+**潜在风险**
+投资者和决策者需高度警惕以下风险：首先是**政策不确定性**，各国政府可能出台激进的监管措施，直接冲击科技巨头的盈利模式和市场估值。其次是**市场波动性**加剧，一旦监管行动落地或公众情绪进一步恶化，可能引发科技股的剧烈调整，并蔓延至更广泛的市场。此外，长期缺乏信任可能导致**人才流失**和**创新瓶颈**，从而削弱这些公司的长期竞争力。在地缘政治层面，对科技巨头缺乏信任或将加速各国追求“数字主权”的进程，进一步推动技术“脱钩”，对全球贸易和技术标准统一构成挑战。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.bloomberg.com/news/videos/2025-12-31/opinion-2025-was-the-year-of-the-tech-ceo-video" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="中美政经-2">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">SCMP China</div>
+                        <h3 class="article-title">Hong Kong leader vows to boost livelihoods, fast-track housing projects in 2026</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 15:34:06 +0000</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 **核心事实：**
+香港特首李家超在其新年致辞中承诺，新一年政府将聚焦改善民生福祉、加快公共房屋项目建设，并大力推动创新科技发展。他指出2025年充满挑战但亦展现了坚韧不拔的精神，强调提升市民生活水平和福祉为两大核心目标。
+
+📊 **经济影响：**
+短期内，加快公共房屋建设将直接提振本地建筑业及相关供应链，刺激投资并创造就业。此举有望缓解居民住房压力，释放部分家庭可支配收入用于消费，间接刺激内需。中期看，政府对创新科技的聚焦，旨在推动经济多元化，吸引高附加值产业投资和人才，提升香港在全球价值链中的竞争力，并更好地融入大湾区发展战略。这些措施若能有效落实，将为香港经济提供稳定支撑，减缓周期性波动影响，并提升长期增长潜力。
+
+⚠️ **潜在风险：**
+投资者需警惕政策执行力不足的风险，包括土地供应瓶颈、行政效率以及大型项目可能面临的超支和延误。大规模公共开支对政府财政的可持续性构成挑战，尤其是在经济增长放缓的背景下。此外，香港经济的开放性使其易受全球宏观经济逆风及地缘政治紧张局势的冲击。若外部环境恶化，可能削弱本地政策的有效性，并影响国际资本对香港长期发展前景的信心。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.scmp.com/news/hong-kong/politics/article/3338344/hong-kong-leader-vows-boost-livelihoods-fast-track-housing-projects-2026?utm_source=rss_feed" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="中美政经-3">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">SCMP China</div>
+                        <h3 class="article-title">Australia sees defiant start to 2026 after mass shooting</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 15:03:31 +0000</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 核心事实：
+2026年新年庆典在全球南半球率先拉开帷幕，新西兰奥克兰以其标志性的天空塔烟花秀领先全球18小时迎接新年。紧随其后，澳大利亚在经历一场骇人听闻的群体枪击事件后，仍以“不屈不挠”的姿态举行了新年庆祝活动。奥克兰的5分钟烟花表演使用了3500发烟花，而澳大利亚东海岸则在新西兰之后两小时迎来新年。
+
+📊 经济影响：
+澳大利亚此次枪击事件叠加新年庆典，短期内可能对该国国内消费情绪和旅游业形成复杂影响。一方面，政府与民众“不屈不挠”的姿态有助于稳定市场信心，避免恐慌蔓延；另一方面，安全担忧的上升可能在中期内削弱国际游客对澳大利亚的信心，尤其在事件性质未完全明朗前，旅游、酒店及零售等服务业将面临不确定性。新西兰作为区域内相对安全的替代目的地，或能在一定程度上受益于区域旅游流向的调整。
+
+⚠️ 潜在风险：
+投资者需警惕澳大利亚政府后续针对枪击事件可能出台的政策变化，如更严格的枪支管制或安全支出增加，这些可能影响相关行业的运营成本或投资环境。此外，持续的安全担忧可能引发消费者行为模式的转变，导致特定区域或行业的市场需求波动。若事件性质涉及更广泛的社会或地缘政治因素，可能进一步加剧投资者对该地区政治稳定性和社会凝聚力的担忧，从而增加投资决策的不确定性。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.scmp.com/news/asia/australasia/article/3338342/australia-sees-defiant-start-2026-after-mass-shooting?utm_source=rss_feed" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="category category-vietnam">
+            <div class="category-header">
+                <span class="category-icon">🇻🇳</span>
+                <h2 class="category-title">越南市场</h2>
+                <span class="category-subtitle">Vietnam Business</span>
             </div>
-        </div>
+
+            <article class="article" data-id="越南市场-0">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">VnExpress Business</div>
+                        <h3 class="article-title">Jackpot cuối cùng năm 2025 có chủ</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 20:24:13 +0700</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">**核心事实：**
+Vietlott于12月31日确认一名客户中得超过170亿越南盾（约合70万美元）的头奖。这一事件标志着该年度最后一期巨额彩票派奖，尽管金额巨大，但仍属单一事件。
+
+**经济影响：**
+虽然单笔超过170亿越南盾的彩票中奖金额对于越南整体经济体量而言微不足道，其直接的宏观经济影响几乎可以忽略不计。然而，从更广阔的视角看，彩票行业的持续运营和定期派奖，反映了部分居民的可支配收入和消费心理。在一个新兴市场经济体如越南，这可能间接体现了在强劲的外国直接投资（FDI）和出口驱动下，消费者信心的相对稳定。此笔资金的支出（如用于奢侈品或房地产）可能对当地微观经济产生短期涟漪效应，但不会改变越南整体的增长轨道或货币政策路径。
+
+**潜在风险：**
+对于投资者和决策者而言，关键在于避免将孤立的消费者支出事件误读为整体经济趋势的强劲信号。尽管彩票业的健康发展间接表明消费者信心尚可，但其背后可能存在的过度博彩、非理性消费等社会问题，若未得到有效监管，长期而言可能对部分家庭财务健康造成负面影响。此外，若此类事件在某些地区引起不当的财富效应或分配争议，可能会在特定社群中引发不满，进而带来潜在的社会稳定风险，尽管其宏观影响通常有限。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://vnexpress.net/jackpot-cuoi-cung-nam-2025-co-chu-5000723.html" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="越南市场-1">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">VnExpress Business</div>
+                        <h3 class="article-title">MobiFone có Quyền Tổng giám đốc mới</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 20:00:52 +0700</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 **核心事实**
+越南大型国有电信运营商MobiFone任命Trần Đức Thành为代理总经理。Trần先生此前担任公司副总经理，生于1989年，此次晋升标志着一家重要国有企业高层领导的年轻化趋势，也是越南高层管理梯队新老交替的一部分。
+
+📊 **经济影响**
+此次任命对越南经济具有多层面的短期和中期影响。首先，作为越南关键基础设施提供商，MobiFone领导层的年轻化可能预示着公司将加速数字化转型和技术升级，如5G部署和数据中心建设，从而提升国家整体的数字经济竞争力。中期来看，此举或反映出越南政府在国有企业改革中，更加注重效率和创新，有助于提振投资者信心。更高效的MobiFone将为外国直接投资（FDI）提供更优质的通信服务支持，尤其利好高科技制造业和数字服务业在越南的布局。同时，优化的通信基础设施也将间接促进越南商品的出口竞争力。
+
+⚠️ **潜在风险**
+尽管领导层年轻化带来增长潜力，投资者仍需警惕潜在风险。首先是政策执行风险，年轻领导者在推动复杂国有企业改革和战略转型时，可能面临内部阻力或经验不足的挑战。其次，国有企业改革的节奏和深度仍存在一定政策不确定性，新任代理总经理的权限和影响力有待观察。若改革不如预期，可能影响其长期增长动能和效率提升。此外，电信行业的激烈竞争以及5G等高昂投资的商业回报也构成潜在风险。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://vnexpress.net/mobifone-co-quyen-tong-giam-doc-moi-5000714.html" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="category category-global">
+            <div class="category-header">
+                <span class="category-icon">🌍</span>
+                <h2 class="category-title">全球宏观</h2>
+                <span class="category-subtitle">Global & EU/East Asia</span>
+            </div>
+
+            <article class="article" data-id="全球宏观-0">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">FT Markets</div>
+                        <h3 class="article-title">Global stocks shrug off trade turmoil to post double-digit gains in 2025</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 14:30:58 GMT</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 **核心事实**
+2025年全球股市表现强劲，华尔街S&P 500指数录得17%的涨幅，而更广泛的全球指数则上涨20%，均大幅超出市场分析师的预期。这一显著的涨势是在全球贸易摩擦持续存在的背景下实现的，表明市场对风险的适应性或对未来增长的乐观情绪。
+
+📊 **经济影响**
+此次股市的强劲表现反映出市场对未来经济增长的乐观预期，以及企业盈利的韧性，即使面对贸易摩擦，全球供应链的适应性也超出预料。短期内，这将提振消费者和企业信心，可能刺激进一步的资本流入全球股市，尤其是有望受益于技术创新和结构性改革的板块。中期来看，持续的财富效应有助于支撑全球消费支出，并可能使得主要经济体的央行在货币政策正常化方面拥有更大的灵活性，但这种“脱钩”于贸易担忧的走势也暗示了潜在的结构性变化，例如供应链的重塑和区域化可能正在抵消部分负面影响。
+
+⚠️ **潜在风险**
+尽管市场表现强劲，但投资者和决策者仍需警惕潜在风险。首先，市场对贸易摩擦的“漠视”可能导致对风险的低估，一旦贸易谈判破裂或地缘政治紧张局势升级，市场可能面临迅速且剧烈的回调风险。其次，当前的高位估值可能部分脱离了实体经济的实际增长潜力，形成资产泡沫。此外，如果央行误读市场乐观情绪，过早或过度收紧货币政策，可能扼杀经济复苏动力。最后，全球贸易格局的不确定性依然存在，供应链重组的长期成本和效率问题尚待观察，这些都可能在中期对企业盈利构成压力。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.ft.com/content/7c8ead64-23f8-43ec-812e-0e24df326b07" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="全球宏观-1">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">FT Markets</div>
+                        <h3 class="article-title">Forecasting the world in 2026</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 05:00:18 GMT</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 **核心事实**
+FT Markets的专家们对2026年全球经济前景进行了前瞻性预测，核心议题聚焦于可能重塑全球格局的关键趋势。这些预测涵盖了美国潜在的贸易保护主义升级（尤其关注特朗普政府可能实施的更高关税）、全球央行利率政策的未来走向，以及人工智能驱动的类人机器人（humanoid helpers）在经济中日益增长的作用及其潜在影响。
+
+📊 **经济影响**
+潜在的特朗普更高关税政策将对全球贸易体系和供应链造成剧烈冲击，特别是可能加剧中美之间的贸易摩擦，促使跨国企业进一步分散在华投资，利好如越南等受益于供应链转移的国家，但全球贸易成本的上升最终将影响消费者。利率前景的不确定性是影响全球资本流动的关键因素；若发达经济体维持高利率，将吸引国际资本回流，对新兴市场构成资本外流压力，并抑制全球投资。同时，类人机器人的发展预示着生产力的大幅跃升，将重塑制造业和服务业格局，长期看利好全球增长，但中期内可能带来劳动力结构性失衡和收入分配挑战。
+
+⚠️ **潜在风险**
+投资者和决策者需警惕多重风险。首先是政策不确定性，尤其是在美国大选背景下，贸易政策可能出现剧烈转向，引发全球市场波动和投资意愿减弱。其次，地缘政治风险可能因贸易摩擦加剧而升级，进一步扰乱供应链并推高商品价格。此外，全球货币政策路径的分化和不确定性将导致市场利率和汇率的剧烈波动，影响跨国投资回报。最后，类人机器人的快速发展虽具潜力，但也可能带来劳动力市场结构性失业的社会风险和伦理挑战，需要前瞻性的政策应对。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.ft.com/content/8ed9aed7-18cc-41f3-bdcc-5a04c856fe5b" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="全球宏观-2">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">BBC Business</div>
+                        <h3 class="article-title">Eurostar services return to normal after major Channel Tunnel disruption</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 09:55:07 GMT</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">**核心事实**
+英吉利海峡隧道的重大中断事件后，欧洲之星（Eurostar）服务已恢复正常运行，但运营方仍提醒乘客需警惕潜在的临时性延误和取消。此次事件凸显了连接英国与欧洲大陆关键交通基础设施的脆弱性。
+
+**经济影响**
+此次中断对英国和欧洲大陆主要枢纽城市（如伦敦、巴黎、布鲁塞尔）的短期经济活动造成了直接影响。旅游、酒店、零售和商务旅行部门在中断期间营收受损，客流量下降。中期来看，消费者和企业对跨境铁路旅行的信心可能受到轻微影响，部分旅行需求或暂时转向航空或海运。对于欧洲之星运营商而言，虽然服务已恢复，但品牌形象和潜在收入损失仍需时间消化，并可能促使未来加大对基础设施韧性和应急预案的投资。更广义地看，此类事件提醒市场关注欧洲区域经济一体化在关键基础设施面临挑战时的潜在脆弱性。
+
+**潜在风险**
+投资者和决策者需警惕未来关键交通基础设施面临的潜在运营风险，包括技术故障、极端天气事件或安全威胁。这些风险可能导致服务中断常态化，进而对欧洲内部供应链和人员流动效率构成长期压力。此外，各国政府可能面临加大基础设施投资和跨国协调的压力，但财政空间和政策优先级的差异可能带来不确定性。长期来看，若此类事件频发，可能影响国际资本对欧洲区域一体化项目（如“脱碳”交通网络）的投资意愿，并对相关上市公司的股价构成持续性负面影响。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.bbc.com/news/articles/c0q4eg03eyzo?at_medium=RSS&at_campaign=rss" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="全球宏观-3">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">BBC Business</div>
+                        <h3 class="article-title">Bottled water from Waitrose recalled over risk it contains glass</h3>
+                        <div class="article-meta">Wed, 31 Dec 2025 15:00:20 GMT</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 **核心事实：**
+英国连锁超市Waitrose正在召回其销售的Deeside品牌瓶装水，原因是英国食品安全监管机构发布警示，发现该产品可能含有玻璃碎片。监管机构已建议购买了受影响批次的消费者将产品退回商店，以保障公众健康安全。
+
+📊 **经济影响：**
+此事件对英国整体宏观经济的直接冲击预计有限，但其微观经济影响不容忽视。对Waitrose而言，短期内将面临产品召回的运营成本、销售损失及品牌声誉挑战。对Deeside品牌及其生产商的打击更为严重，可能导致市场份额大幅流失、生产中断及潜在的法律诉讼，并引发对其生产流程和质量控制体系的全面审查。此外，事件可能暂时影响英国瓶装水市场的消费者信心，促使部分消费者转向其他品牌、品类或自来水，从而对该细分市场构成短期压力。
+
+⚠️ **潜在风险：**
+投资者需警惕此类产品安全事件对相关上市公司（如Waitrose母公司或Deeside控股方）股价和盈利能力的潜在负面影响。更广义来看，事件可能促使英国食品安全监管机构加强对饮用水及其他食品饮料生产企业的审查力度，提高全行业的合规成本。长远来看，若类似质量问题在不同品牌或行业中频繁发生，可能逐步侵蚀整体消费者对英国本土品牌和供应链的信任度，甚至引发对英国食品供应链韧性及监管有效性的质疑，进而对特定消费品领域的市场估值和潜在FDI产生负面影响。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.bbc.com/news/articles/c62wrn17295o?at_medium=RSS&at_campaign=rss" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="全球宏观-4">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">Nikkei Asia</div>
+                        <h3 class="article-title">China embraces world with 'open arms,' Xi says in New Year's speech</h3>
+                        <div class="article-meta">N/A</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">**核心事实**
+国家主席习近平在新年贺词中强调中国将“张开双臂”拥抱世界，重申了中国对外开放的承诺，旨在向国际社会传递合作信号，稳定外资信心，并呼应其构建人类命运共同体的愿景。此表态是高层释放的战略性信号，意在应对全球经济下行压力及逆全球化思潮。
+
+**经济影响**
+此言论短期内有助于提振市场对中国持续对外开放的预期，或能缓解部分外资企业的观望情绪，为吸引FDI提供积极信号，尤其是在服务业和高科技领域。对中美关系而言，这可能在一定程度上缓和言论上的紧张，但难以根本改变双边贸易和供应链重构的长期趋势，跨国企业仍将坚持供应链多元化策略。对于越南等东南亚国家，虽然中国持续开放，但全球供应链重构和“中国+1”策略下的投资多元化趋势不会逆转，这些国家仍将继续吸引FDI和出口订单。中国扩大开放反而可能意味着区域内吸引外资的竞争加剧。在全球宏观层面，若能提升全球对中国增长的信心，或对资本流入新兴市场产生温和积极作用。
+
+**潜在风险**
+投资者需警惕言论与实际政策落实之间的潜在差距。地缘政治紧张局势，尤其是在技术和贸易领域，仍是核心风险，可能随时演变为市场波动因素。即便中国表示开放，但缺乏具体、可执行且具透明度的改革措施，将难以有效消除外资对营商环境的顾虑。此外，中国自身面临的结构性挑战，如房地产困境和内需不足，可能限制其吸引外资的实际成效，加剧市场对经济增长前景的不确定性，从而影响资本流动和市场预期。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://asia.nikkei.com/politics/china-embraces-world-with-open-arms-xi-says-in-new-year-s-speech" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="全球宏观-5">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">Nikkei Asia</div>
+                        <h3 class="article-title">How Arizona is cultivating talent for a US chip revival</h3>
+                        <div class="article-meta">N/A</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">**核心事实**
+美国正积极推动其半导体产业的本土复兴，其中亚利桑那州正成为关键的劳动力培养中心。通过与当地大学和社区学院合作，该州建立专门的人才培训项目，旨在为英特尔、台积电等在该州投资建设的先进芯片制造工厂提供必要的熟练技术工人，以解决人才短缺，支撑本土制造能力提升。
+
+**经济影响**
+此举将对美国经济产生显著的短期和中期影响。短期内，亚利桑那州将受益于教育投资增加、高薪职位创造及相关基础设施建设。中期来看，这有助于美国增强关键半导体供应链的韧性与独立性，降低对单一区域（特别是亚洲）的过度依赖，提升国家经济安全。对中美关系而言，此战略强化了美国在高科技领域的“去风险化”和本土化趋势，可能加剧两国在技术主导权上的竞争，并进一步推动全球半导体供应链的重构。
+
+**潜在风险**
+投资者和决策者需警惕多重风险。首先是政策持续性与执行风险，大规模人才培养和工厂运营需长期、稳定的政策支持与巨额资金投入，未来政府更迭可能影响项目进展。其次，美国本土生产的高昂成本可能削弱其在全球市场的竞争力，需要持续补贴以维持。地缘政治紧张局势亦是重要风险，美国强化本土芯片制造可能被中国视为进一步的科技遏制，引发报复或加速其自主研发进程，从而加剧全球芯片产业的碎片化和市场不确定性。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://asia.nikkei.com/business/tech/semiconductors/how-arizona-is-cultivating-talent-for-a-us-chip-revival" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="全球宏观-6">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">DW Business</div>
+                        <h3 class="article-title">What challenges does the world economy face in 2026?</h3>
+                        <div class="article-meta">Tue, 30 Dec 2025 11:56:00 GMT</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">【核心事实】
+DW Business指出，全球经济在2026年将面临多重挑战，可能抑制增长。核心风险包括持续的贸易紧张局势、不断上升的全球债务负担，以及对人工智能（AI）股票估值过高的泡沫化担忧。这些因素共同构成了未来一年经济前景的不确定性，预示着全球经济增长路径可能更为曲折。
+
+【经济影响】
+贸易紧张局势将继续推动全球供应链的重构与区域化，短期内可能提高企业运营成本并影响全球贸易总量，对依赖出口的新兴经济体形成压力。中期来看，高企的政府及企业债务将限制各国财政政策空间，削弱应对未来经济冲击的能力，并可能推高长期利率，影响全球资本流动和投资决策。同时，对AI股票泡沫的担忧一旦演变为现实，可能引发科技板块乃至更广泛市场的剧烈调整，削弱消费者和投资者信心，进而对实体经济增长造成负面冲击。
+
+【潜在风险】
+投资者需警惕政策不确定性加剧，尤其是地缘政治因素主导下的贸易政策变动，可能引发市场剧烈波动。全球债务问题在利率高企环境下，可能导致部分高负债国家面临偿债压力，触发区域性金融风险。此外，AI概念股估值调整是重要的市场风险，若修正幅度过大，可能通过财富效应和信心传导，对全球经济复苏构成系统性威胁。决策者应密切关注这些风险的联动性，提前制定应对策略，以避免风险叠加效应的放大。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.dw.com/en/what-challenges-does-the-world-economy-face-in-2026/a-75238039?maca=en-rss-en-bus-2091-xml-mrss" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article" data-id="全球宏观-7">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">DW Business</div>
+                        <h3 class="article-title">Taiwan heavily reliant on Russian energy for chip manufacturing</h3>
+                        <div class="article-meta">Mon, 29 Dec 2025 15:57:00 GMT</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">📌 核心事实：
+新闻揭示，台湾高科技产业，特别是其全球领先的芯片制造业，对俄罗斯能源存在显著依赖。其中，用于芯片生产关键环节的石脑油（一种化石燃料衍生物）大量从俄罗斯进口，此前煤炭供应也主要来自俄罗斯。此情况凸显了全球半导体供应链中一个关键但此前被低估的能源安全脆弱点。
+
+📊 经济影响：
+短期内，这种能源依赖性可能推高台湾芯片制造商的生产成本，并可能传导至全球芯片价格，影响下游电子产品、汽车等行业。中期来看，若俄罗斯能源供应因地缘政治因素受阻或价格持续飙升，将严重冲击台湾在全球半导体市场的领导地位，加剧全球芯片短缺。对于中美关系，此事件进一步凸显了全球科技供应链的脆弱性；美国在推动供应链“去风险化”的背景下，将更加关注台湾的能源安全，以确保关键技术供应稳定。而作为全球主要芯片消费国之一，中国也将间接受到影响，或加速其本土芯片自给自足的步伐。
+
+⚠️ 潜在风险：
+投资者和决策者需高度警惕以下风险：首先是地缘政治风险，俄罗斯与西方的关系紧张或俄乌冲突升级，可能导致俄罗斯能源出口政策变化，直接威胁台湾芯片制造的能源供应稳定。其次是市场波动风险，关键能源商品如石脑油的价格剧烈波动将直接影响芯片制造成本和利润率，引发半导体板块市场震荡。最后是供应链韧性风险，此依赖性暴露出全球半导体供应链的又一薄弱环节，任何供应中断都可能带来灾难性后果，促使各国和企业重新评估并投入更多资源进行能源来源和供应链的多元化布局。</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="https://www.dw.com/en/taiwan-heavily-reliant-on-russian-energy-for-chip-manufacturing/a-75222206?maca=en-rss-en-bus-2091-xml-mrss" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+    </main>
+    
+    <footer class="footer">
+        <p>🤖 由 Google Gemini AI 深度分析驱动</p>
+        <p class="powered">Automated by GitHub Actions · Hosted on GitHub Pages</p>
+    </footer>
+    
+    <script>
+        function toggleArticle(header) {
+            const article = header.closest('.article');
+            const wasExpanded = article.classList.contains('expanded');
+            
+            // Close all other articles (optional: remove these lines for multi-expand)
+            // document.querySelectorAll('.article.expanded').forEach(a => {
+            //     if (a !== article) a.classList.remove('expanded');
+            // });
+            
+            // Toggle current article
+            article.classList.toggle('expanded');
+            
+            // Smooth scroll into view if expanding
+            if (!wasExpanded) {
+                setTimeout(() => {
+                    article.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        }
         
-        <div class="footer">
-            <p>🤖 由 Google Gemini AI 驱动 | Powered by Google Gemini API</p>
-            <p>自动更新于 GitHub Actions | Auto-updated by GitHub Actions</p>
-            <p><a href="https://github.com">GitHub</a> | <a href="https://pages.github.com">GitHub Pages</a></p>
-        </div>
-    </div>
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.article.expanded').forEach(a => {
+                    a.classList.remove('expanded');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
