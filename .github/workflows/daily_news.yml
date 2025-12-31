@@ -2,74 +2,41 @@ name: Daily News Aggregation
 
 on:
   schedule:
-    # Run at 00:00 UTC (08:00 Beijing Time) every day
     - cron: '0 0 * * *'
-  
-  # Allow manual trigger from GitHub Actions UI
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   aggregate-news:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-    
+
     steps:
-      # Step 1: Check out the repository code
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      # Step 2: Set up Python environment
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
-      
-      # Step 3: Install dependencies
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      # Step 4: Run the news aggregation script
+
       - name: Run news aggregation
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python main.py
-      
-      # Step 5: Configure Git user for commit
-      - name: Configure Git
+
+      - name: Deploy to GitHub
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-      
-      # Step 6: Check if index.html has changes
-      - name: Check for changes
-        id: check_changes
-        run: |
-          if git diff --quiet index.html; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
-      
-      # Step 7: Commit and push changes
-      - name: Commit and push changes
-        if: steps.check_changes.outputs.has_changes == 'true'
-        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "chore: update daily news - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          git push origin main
-      
-      # Step 8: Log completion status
-      - name: Log completion
-        run: |
-          echo "Daily news aggregation completed successfully!"
-          echo "Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          git commit -m "Update daily news content"
+          git push
