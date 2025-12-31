@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """
-GitHub Automated Daily News Aggregator
-Fetches news from RSS feeds, generates AI summaries via Google Gemini API,
-and outputs a static HTML file for GitHub Pages deployment.
+GitHub Automated Daily News Aggregator V2.0
+Deep Analysis Edition with Immersive Accordion UI
+
+Features:
+- Three regional categories: China & US, Vietnam Biz, Global & EU/East Asia
+- AI-powered deep analysis by "Chief Macro Economist" persona
+- Accordion-style expand/collapse UI without page redirects
 """
 
 import os
 import sys
-import json
 import logging
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
 import feedparser
 import google.generativeai as genai
-from urllib.parse import urljoin
 
 # Configure logging
 logging.basicConfig(
@@ -23,29 +25,57 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class NewsAggregator:
-    """Main news aggregation engine"""
+class NewsAggregatorV2:
+    """V2.0 News Aggregation Engine with Deep Analysis"""
     
-    # RSS Feed sources organized by category
+    # RSS Feed sources organized by regional category
     FEED_SOURCES = {
-        "越南特刊": [
-            {"name": "CafeF", "url": "https://cafef.vn/rss/news.rss"},
-            {"name": "VnEconomy", "url": "https://vneconomy.vn/rss.xml"},
+        "中美政经": [
+            {"name": "Reuters US", "url": "https://feeds.reuters.com/reuters/topNews"},
+            {"name": "Bloomberg Politics", "url": "https://feeds.bloomberg.com/politics/news.rss"},
+            {"name": "SCMP China", "url": "https://www.scmp.com/rss/91/feed"},
+            {"name": "Caixin Global", "url": "https://www.caixinglobal.com/rss.xml"},
+            {"name": "WSJ World", "url": "https://feeds.a]wsj.com/wsj/xml/rss/3_7085.xml"},
         ],
-        "东亚/中国": [
-            {"name": "新浪财经", "url": "http://feed.sina.com.cn/finance/"},
-            {"name": "财新网", "url": "http://feed.caixin.com/rss/caixin.xml"},
-            {"name": "东方财富", "url": "http://feed.eastmoney.com/"},
+        "越南市场": [
+            {"name": "CafeF", "url": "https://cafef.vn/rss/thi-truong-chung-khoan.rss"},
+            {"name": "VnExpress Business", "url": "https://vnexpress.net/rss/kinh-doanh.rss"},
+            {"name": "VnEconomy", "url": "https://vneconomy.vn/rss/chung-khoan.rss"},
+            {"name": "Vietnam Investment Review", "url": "https://vir.com.vn/rss/investment.rss"},
         ],
         "全球宏观": [
-            {"name": "Bloomberg", "url": "https://feeds.bloomberg.com/markets/news.rss"},
-            {"name": "Reuters", "url": "https://feeds.reuters.com/reuters/businessNews"},
-            {"name": "Financial Times", "url": "https://feeds.ft.com/markets"},
+            {"name": "FT Markets", "url": "https://www.ft.com/rss/home"},
+            {"name": "Reuters Business", "url": "https://feeds.reuters.com/reuters/businessNews"},
+            {"name": "BBC Business", "url": "https://feeds.bbci.co.uk/news/business/rss.xml"},
+            {"name": "Nikkei Asia", "url": "https://asia.nikkei.com/rss/feed/nar"},
+            {"name": "DW Business", "url": "https://rss.dw.com/xml/rss-en-bus"},
         ]
     }
     
+    # Deep Analysis Prompt Template
+    ANALYST_PROMPT = """你是一位拥有20年经验的首席宏观经济分析师，曾任职于高盛、摩根士丹利等顶级投行。
+
+请根据以下新闻信息，撰写一篇200-300字的深度研报摘要。
+
+【新闻来源】{source}
+【新闻标题】{title}
+【原文摘要】{summary}
+
+你的研报必须包含以下三个部分，请用清晰的段落分隔：
+
+📌 核心事实：
+用2-3句话精准概括新闻的核心内容，提炼关键数据和事件。
+
+📊 经济影响：
+分析此事件对相关经济体、行业或市场的短期和中期影响。如涉及中美关系，需分析对双边贸易、供应链的影响；如涉及越南，需关注FDI和出口；如涉及全球宏观，需关注货币政策和资本流动。
+
+⚠️ 潜在风险：
+指出投资者和决策者需要警惕的风险因素，包括政策不确定性、市场波动、地缘政治风险等。
+
+请直接输出研报内容，使用中文，语言专业但易于理解。不要添加任何开场白或结束语。"""
+
     def __init__(self):
-        """Initialize the news aggregator with Gemini API"""
+        """Initialize the V2.0 news aggregator with Gemini API"""
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise ValueError(
@@ -57,7 +87,7 @@ class NewsAggregator:
         self.model = genai.GenerativeModel("gemini-2.5-flash")
         self.news_data = {}
         
-        logger.info("NewsAggregator initialized successfully")
+        logger.info("NewsAggregatorV2 initialized successfully")
     
     def fetch_feeds(self) -> None:
         """Fetch and parse RSS feeds from all sources"""
@@ -71,26 +101,38 @@ class NewsAggregator:
                     logger.info(f"Fetching {source['name']} ({source['url']})")
                     feed = feedparser.parse(source['url'])
                     
-                    # Get top 3 articles from each source
-                    for entry in feed.entries[:3]:
+                    if feed.bozo and not feed.entries:
+                        logger.warning(f"Feed error for {source['name']}: {feed.bozo_exception}")
+                        continue
+                    
+                    # Get top 2 articles from each source
+                    for entry in feed.entries[:2]:
+                        # Extract and clean summary
+                        raw_summary = entry.get('summary', entry.get('description', ''))
+                        # Remove HTML tags for cleaner text
+                        import re
+                        clean_summary = re.sub(r'<[^>]+>', '', raw_summary)[:500]
+                        
                         article = {
                             "source": source['name'],
                             "title": entry.get('title', 'No title'),
                             "link": entry.get('link', '#'),
-                            "published": entry.get('published', 'N/A'),
-                            "summary": entry.get('summary', '')[:300],  # Truncate original summary
+                            "published": entry.get('published', entry.get('updated', 'N/A')),
+                            "summary": clean_summary,
                         }
                         self.news_data[category].append(article)
+                        logger.info(f"  Added: {article['title'][:50]}...")
                 
                 except Exception as e:
                     logger.warning(f"Error fetching {source['name']}: {str(e)}")
                     continue
         
-        logger.info(f"RSS fetching completed. Total articles: {sum(len(v) for v in self.news_data.values())}")
+        total = sum(len(v) for v in self.news_data.values())
+        logger.info(f"RSS fetching completed. Total articles: {total}")
     
-    def generate_summary(self, title: str, summary: str, source: str) -> Optional[str]:
+    def generate_deep_analysis(self, title: str, summary: str, source: str) -> Optional[str]:
         """
-        Generate AI-powered Chinese summary using Google Gemini API
+        Generate AI-powered deep analysis using Google Gemini API
         
         Args:
             title: Article title
@@ -98,23 +140,19 @@ class NewsAggregator:
             source: News source name
             
         Returns:
-            100-word Chinese summary or None if generation fails
+            200-300 word deep analysis or None if generation fails
         """
         try:
-            # Prepare prompt for Gemini
-            prompt = f"""请用中文为以下新闻生成100字左右的摘要。摘要应该简洁、准确、突出核心观点。
-
-新闻来源: {source}
-标题: {title}
-原文摘要: {summary}
-
-请直接输出中文摘要，不需要其他说明。"""
+            prompt = self.ANALYST_PROMPT.format(
+                source=source,
+                title=title,
+                summary=summary
+            )
             
             response = self.model.generate_content(prompt)
             
             if response.text:
-                # Truncate to approximately 100 words (300 characters in Chinese)
-                return response.text[:300]
+                return response.text.strip()
             else:
                 logger.warning(f"Empty response from Gemini for: {title}")
                 return None
@@ -124,51 +162,59 @@ class NewsAggregator:
             return None
     
     def process_articles(self) -> None:
-        """Process articles with AI summaries"""
-        logger.info("Processing articles with Gemini API...")
+        """Process articles with deep AI analysis"""
+        logger.info("Processing articles with Gemini API deep analysis...")
         
         for category, articles in self.news_data.items():
-            for article in articles:
-                # Generate AI summary
-                ai_summary = self.generate_summary(
+            logger.info(f"Processing category: {category} ({len(articles)} articles)")
+            
+            for i, article in enumerate(articles):
+                logger.info(f"  [{i+1}/{len(articles)}] Analyzing: {article['title'][:40]}...")
+                
+                # Generate deep analysis
+                analysis = self.generate_deep_analysis(
                     article['title'],
                     article['summary'],
                     article['source']
                 )
                 
-                article['ai_summary'] = ai_summary or "摘要生成失败"
-                logger.info(f"Processed: {article['title'][:50]}...")
+                article['deep_analysis'] = analysis or "深度分析生成失败，请稍后重试。"
         
         logger.info("Article processing completed")
     
     def generate_html(self, output_file: str = "index.html") -> None:
         """
-        Generate static HTML file for GitHub Pages
+        Generate static HTML file with accordion UI
         
         Args:
             output_file: Output HTML file path
         """
         logger.info(f"Generating HTML file: {output_file}")
         
-        # Build HTML content
         html_content = self._build_html()
         
-        # Write to file
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
         logger.info(f"HTML file generated successfully: {output_file}")
     
     def _build_html(self) -> str:
-        """Build complete HTML content"""
-        current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        """Build complete HTML content with accordion UI"""
+        current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        
+        # Category icons and colors
+        category_config = {
+            "中美政经": {"icon": "🇺🇸🇨🇳", "color": "#e74c3c", "subtitle": "China & US Policy"},
+            "越南市场": {"icon": "🇻🇳", "color": "#27ae60", "subtitle": "Vietnam Business"},
+            "全球宏观": {"icon": "🌍", "color": "#3498db", "subtitle": "Global & EU/East Asia"},
+        }
         
         html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每日新闻聚合 | Daily News Digest</title>
+    <title>每日深度研报 | Daily Deep Analysis</title>
     <style>
         * {{
             margin: 0;
@@ -176,251 +222,452 @@ class NewsAggregator:
             box-sizing: border-box;
         }}
         
+        :root {{
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #222230;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border-color: #2a2a3a;
+            --accent-blue: #3498db;
+            --accent-red: #e74c3c;
+            --accent-green: #27ae60;
+        }}
+        
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #333;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
             min-height: 100vh;
-            padding: 20px;
         }}
         
         .container {{
             max-width: 900px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            padding: 20px;
         }}
         
+        /* Header */
         .header {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 20px;
             text-align: center;
-        }}
-        
-        .header h1 {{
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }}
-        
-        .header p {{
-            font-size: 0.95em;
-            opacity: 0.9;
-        }}
-        
-        .timestamp {{
-            font-size: 0.85em;
-            opacity: 0.8;
-            margin-top: 15px;
-            font-weight: 500;
-        }}
-        
-        .content {{
-            padding: 30px 20px;
-        }}
-        
-        .category {{
+            padding: 60px 20px;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 40px;
         }}
         
-        .category-title {{
-            font-size: 1.8em;
-            color: #667eea;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #667eea;
+        .header h1 {{
+            font-size: 2.8em;
             font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #a0a0b0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }}
         
-        .articles {{
-            display: grid;
-            gap: 20px;
+        .header .subtitle {{
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
         }}
         
+        .header .timestamp {{
+            font-size: 0.9em;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            display: inline-block;
+        }}
+        
+        /* Category Section */
+        .category {{
+            margin-bottom: 50px;
+        }}
+        
+        .category-header {{
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }}
+        
+        .category-icon {{
+            font-size: 1.8em;
+        }}
+        
+        .category-title {{
+            font-size: 1.6em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }}
+        
+        .category-subtitle {{
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-left: auto;
+        }}
+        
+        /* Article Card - Accordion */
         .article {{
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            border-radius: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
             transition: all 0.3s ease;
         }}
         
         .article:hover {{
-            background: #f0f2f8;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-            transform: translateX(4px);
+            background: var(--bg-card-hover);
+            border-color: #3a3a4a;
+        }}
+        
+        .article-header {{
+            padding: 20px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            user-select: none;
+        }}
+        
+        .article-header:hover {{
+            background: rgba(255, 255, 255, 0.02);
+        }}
+        
+        .article-indicator {{
+            width: 4px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }}
+        
+        .article-main {{
+            flex: 1;
         }}
         
         .article-source {{
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            margin-bottom: 10px;
-            font-weight: 600;
+            font-size: 0.75em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }}
         
         .article-title {{
-            font-size: 1.2em;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 1.15em;
             font-weight: 600;
-            line-height: 1.4;
-        }}
-        
-        .article-title a {{
-            color: #667eea;
-            text-decoration: none;
-            transition: color 0.2s;
-        }}
-        
-        .article-title a:hover {{
-            color: #764ba2;
-            text-decoration: underline;
-        }}
-        
-        .article-summary {{
-            color: #555;
-            font-size: 0.95em;
-            margin-bottom: 12px;
-            line-height: 1.6;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 8px;
         }}
         
         .article-meta {{
             font-size: 0.85em;
-            color: #999;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: var(--text-muted);
         }}
         
-        .read-more {{
-            display: inline-block;
-            color: #667eea;
+        .article-toggle {{
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }}
+        
+        .article-toggle svg {{
+            width: 16px;
+            height: 16px;
+            fill: var(--text-muted);
+            transition: transform 0.3s ease;
+        }}
+        
+        .article.expanded .article-toggle svg {{
+            transform: rotate(180deg);
+        }}
+        
+        /* Article Content - Expandable */
+        .article-content {{
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }}
+        
+        .article.expanded .article-content {{
+            max-height: 2000px;
+            transition: max-height 0.6s ease-in;
+        }}
+        
+        .article-body {{
+            padding: 0 24px 24px 44px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .analysis-section {{
+            padding-top: 20px;
+        }}
+        
+        .analysis-label {{
+            font-size: 0.8em;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }}
+        
+        .analysis-label::before {{
+            content: "";
+            width: 20px;
+            height: 2px;
+            background: var(--accent-color);
+        }}
+        
+        .analysis-text {{
+            font-size: 1em;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            white-space: pre-wrap;
+        }}
+        
+        .analysis-text p {{
+            margin-bottom: 16px;
+        }}
+        
+        .source-link {{
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-color);
+        }}
+        
+        .source-link a {{
+            font-size: 0.8em;
+            color: var(--text-muted);
             text-decoration: none;
-            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             transition: color 0.2s;
         }}
         
-        .read-more:hover {{
-            color: #764ba2;
+        .source-link a:hover {{
+            color: var(--accent-blue);
         }}
         
+        .source-link a svg {{
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }}
+        
+        /* Footer */
         .footer {{
-            background: #f8f9fa;
-            padding: 20px;
             text-align: center;
-            color: #999;
-            font-size: 0.9em;
-            border-top: 1px solid #eee;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 60px;
         }}
         
-        .footer a {{
-            color: #667eea;
-            text-decoration: none;
+        .footer p {{
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
         }}
         
-        .footer a:hover {{
-            text-decoration: underline;
+        .footer .powered {{
+            font-size: 0.75em;
+            color: var(--text-muted);
+            opacity: 0.7;
         }}
         
+        /* Responsive */
         @media (max-width: 768px) {{
-            .header h1 {{
-                font-size: 1.8em;
+            .container {{
+                padding: 15px;
             }}
             
-            .category-title {{
-                font-size: 1.4em;
+            .header {{
+                padding: 40px 15px;
+            }}
+            
+            .header h1 {{
+                font-size: 2em;
+            }}
+            
+            .category-header {{
+                flex-wrap: wrap;
+            }}
+            
+            .category-subtitle {{
+                width: 100%;
+                margin-left: 0;
+                margin-top: 8px;
+            }}
+            
+            .article-header {{
+                padding: 16px;
+            }}
+            
+            .article-body {{
+                padding: 0 16px 20px 16px;
             }}
             
             .article-title {{
                 font-size: 1.05em;
             }}
-            
-            .content {{
-                padding: 20px 15px;
-            }}
         }}
+        
+        /* Category-specific accent colors */
+        .category-china-us {{ --accent-color: #e74c3c; }}
+        .category-vietnam {{ --accent-color: #27ae60; }}
+        .category-global {{ --accent-color: #3498db; }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📰 每日新闻聚合</h1>
-            <p>Daily News Digest | 智能摘要 · 全球视野</p>
-            <div class="timestamp">更新时间: {current_time}</div>
-        </div>
-        
-        <div class="content">
+    <header class="header">
+        <h1>📊 每日深度研报</h1>
+        <p class="subtitle">AI-Powered Macro Analysis · 首席分析师视角</p>
+        <span class="timestamp">🕐 更新时间: {current_time}</span>
+    </header>
+    
+    <main class="container">
 """
         
-        # Add categories and articles
+        # Generate category sections
+        category_classes = {
+            "中美政经": "category-china-us",
+            "越南市场": "category-vietnam",
+            "全球宏观": "category-global",
+        }
+        
         for category, articles in self.news_data.items():
             if not articles:
                 continue
             
-            html += f'            <div class="category">\n'
-            html += f'                <h2 class="category-title">{category}</h2>\n'
-            html += f'                <div class="articles">\n'
+            config = category_config.get(category, {"icon": "📰", "color": "#666", "subtitle": ""})
+            cat_class = category_classes.get(category, "")
             
-            for article in articles:
-                html += self._build_article_html(article)
+            html += f"""
+        <section class="category {cat_class}">
+            <div class="category-header">
+                <span class="category-icon">{config['icon']}</span>
+                <h2 class="category-title">{category}</h2>
+                <span class="category-subtitle">{config['subtitle']}</span>
+            </div>
+"""
             
-            html += f'                </div>\n'
-            html += f'            </div>\n'
+            for idx, article in enumerate(articles):
+                article_id = f"{category}-{idx}".replace(" ", "-")
+                # Escape HTML special characters
+                title_escaped = article['title'].replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
+                analysis_escaped = article.get('deep_analysis', '').replace('<', '&lt;').replace('>', '&gt;')
+                
+                html += f"""
+            <article class="article" data-id="{article_id}">
+                <div class="article-header" onclick="toggleArticle(this)">
+                    <div class="article-indicator"></div>
+                    <div class="article-main">
+                        <div class="article-source">{article['source']}</div>
+                        <h3 class="article-title">{title_escaped}</h3>
+                        <div class="article-meta">{article['published']}</div>
+                    </div>
+                    <div class="article-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-body">
+                        <div class="analysis-section">
+                            <div class="analysis-label">深度分析 Deep Analysis</div>
+                            <div class="analysis-text">{analysis_escaped}</div>
+                        </div>
+                        <div class="source-link">
+                            <a href="{article['link']}" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                                Source Link · 原文链接
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+"""
+            
+            html += """
+        </section>
+"""
         
-        html += """        </div>
+        html += """
+    </main>
+    
+    <footer class="footer">
+        <p>🤖 由 Google Gemini AI 深度分析驱动</p>
+        <p class="powered">Automated by GitHub Actions · Hosted on GitHub Pages</p>
+    </footer>
+    
+    <script>
+        function toggleArticle(header) {
+            const article = header.closest('.article');
+            const wasExpanded = article.classList.contains('expanded');
+            
+            // Close all other articles (optional: remove these lines for multi-expand)
+            // document.querySelectorAll('.article.expanded').forEach(a => {
+            //     if (a !== article) a.classList.remove('expanded');
+            // });
+            
+            // Toggle current article
+            article.classList.toggle('expanded');
+            
+            // Smooth scroll into view if expanding
+            if (!wasExpanded) {
+                setTimeout(() => {
+                    article.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        }
         
-        <div class="footer">
-            <p>🤖 由 Google Gemini AI 驱动 | Powered by Google Gemini API</p>
-            <p>自动更新于 GitHub Actions | Auto-updated by GitHub Actions</p>
-            <p><a href="https://github.com">GitHub</a> | <a href="https://pages.github.com">GitHub Pages</a></p>
-        </div>
-    </div>
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.article.expanded').forEach(a => {
+                    a.classList.remove('expanded');
+                });
+            }
+        });
+    </script>
 </body>
 </html>"""
         
         return html
     
-    def _build_article_html(self, article: Dict) -> str:
-        """Build HTML for a single article"""
-        return f"""                    <div class="article">
-                        <span class="article-source">{article['source']}</span>
-                        <h3 class="article-title">
-                            <a href="{article['link']}" target="_blank" rel="noopener noreferrer">
-                                {article['title']}
-                            </a>
-                        </h3>
-                        <div class="article-summary">{article.get('ai_summary', '摘要生成失败')}</div>
-                        <div class="article-meta">
-                            <span>{article['published']}</span>
-                            <a href="{article['link']}" target="_blank" rel="noopener noreferrer" class="read-more">
-                                阅读全文 →
-                            </a>
-                        </div>
-                    </div>
-"""
-    
     def run(self, output_file: str = "index.html") -> None:
         """Execute the complete news aggregation pipeline"""
         try:
-            logger.info("=" * 60)
-            logger.info("Starting Daily News Aggregation Pipeline")
-            logger.info("=" * 60)
+            logger.info("=" * 70)
+            logger.info("Starting Daily News Aggregation Pipeline V2.0 - Deep Analysis Edition")
+            logger.info("=" * 70)
             
             self.fetch_feeds()
             self.process_articles()
             self.generate_html(output_file)
             
-            logger.info("=" * 60)
-            logger.info("Pipeline completed successfully!")
-            logger.info("=" * 60)
+            logger.info("=" * 70)
+            logger.info("Pipeline V2.0 completed successfully!")
+            logger.info("=" * 70)
             
         except Exception as e:
             logger.error(f"Pipeline failed: {str(e)}", exc_info=True)
@@ -430,7 +677,7 @@ class NewsAggregator:
 def main():
     """Main entry point"""
     try:
-        aggregator = NewsAggregator()
+        aggregator = NewsAggregatorV2()
         aggregator.run()
     except ValueError as e:
         logger.error(f"Configuration error: {str(e)}")
